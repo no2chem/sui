@@ -6,6 +6,7 @@ use crate::{
     authority_batch::{BroadcastReceiver, BroadcastSender},
     execution_engine, transaction_input_checker,
 };
+use itertools::Either;
 use move_binary_format::CompiledModule;
 use move_bytecode_utils::module_cache::ModuleCache;
 use move_core_types::{
@@ -50,7 +51,7 @@ mod temporary_store;
 pub use temporary_store::AuthorityTemporaryStore;
 
 mod authority_store;
-pub use authority_store::AuthorityStore;
+pub use authority_store::{AuthorityStore, GatewayStore};
 
 pub mod authority_notifier;
 
@@ -666,8 +667,11 @@ impl AuthorityState {
         tx_digest: TransactionDigest,
         signed_transaction: SignedTransaction,
     ) -> Result<(), SuiError> {
-        self._database
-            .set_transaction_lock(mutable_input_objects, tx_digest, signed_transaction)
+        self._database.set_transaction_lock(
+            mutable_input_objects,
+            tx_digest,
+            Either::Right(signed_transaction),
+        )
     }
 
     /// Update state and signals that a new transactions has been processed
